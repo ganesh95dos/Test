@@ -1,0 +1,21 @@
+EKS
+1) aws eks update-kubeconfig --name my-TWS-EKS-cluster --region ap-south-1
+2) kubectl config current-context
+You need to add the IAM user to the aws-auth ConfigMap in your EKS cluster.
+EKS has not mapped this user correctly in the aws-auth ConfigMap.
+
+3) kubectl get configmap aws-auth -n kube-system -o yaml
+not work
+
+4) Manually delete the access entry using AWS CLI:
+aws eks delete-access-entry \
+  --cluster-name my-TWS-EKS-cluster \
+  --principal-arn arn:aws:iam::149536475766:user/teraform \
+  --region ap-south-1
+
+5) terraform apply -auto-approve
+
+6) Check if the access entry is present and active:
+aws eks list-access-entries --cluster-name my-TWS-EKS-cluster --region ap-south-1
+
+
