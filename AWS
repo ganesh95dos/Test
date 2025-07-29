@@ -6,6 +6,9 @@ EKS has not mapped this user correctly in the aws-auth ConfigMap.
 
 3) kubectl get configmap aws-auth -n kube-system -o yaml
 
+get keys
+cat ~/.aws/credentials
+
 check user
 aws sts get-caller-identity
 
