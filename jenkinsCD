@@ -1,0 +1,60 @@
+@Library('share@main') _
+pipeline {
+    agent any
+    
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws_access_key_id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws_secret_access_key')
+        AWS_DEFAULT_REGION    = 'ap-south-1'  // or your preferred region
+    }
+
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+        stage('Check minikube nodes'){
+            steps{
+                sh 'whoami'
+                sh 'aws sts get-caller-identity --region ap-south-1'
+                sh 'aws eks update-kubeconfig --name my-TWS-EKS-cluster --region ap-south-1'
+                sh 'kubectl get nodes'
+            }
+        }
+        
+        stage('Install ArgoCD'){
+            steps{
+                sh'''
+                    
+                    #kubectl create namespace argocd || true
+                    #kubectl get ns
+                    
+                    #kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+                    
+                    #Wait for the service to be created
+                    #sleep 30
+                    
+                    #echo "Patching argocd-server service to type NodePort..."
+                    #kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+                    
+                    #kubectl get svc -o wide
+                    
+                    echo "https://$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}'):$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.ports[0].nodePort}')"
+
+                    pass=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d; echo
+)
+                 
+                '''
+            }
+        }
+        
+        
+        
+        stage('Successfull'){
+            steps{
+                echo 'Successfull'
+            }
+        }
+    }
+}
