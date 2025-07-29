@@ -12,6 +12,9 @@ aws sts get-caller-identity
 unset AWS_PROFILE
 aws configure list-profiles
 
+hear all defualt profie save that showing in aws configure list-profiles
+cat ~/.aws/config
+
 swithc user
 export AWS_PROFILE=admin-user
 
