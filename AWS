@@ -5,7 +5,7 @@ You need to add the IAM user to the aws-auth ConfigMap in your EKS cluster.
 EKS has not mapped this user correctly in the aws-auth ConfigMap.
 
 3) kubectl get configmap aws-auth -n kube-system -o yaml
-
+unset AWS_PROFILE
 get keys
 cat ~/.aws/credentials
 
