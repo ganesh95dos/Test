@@ -9,6 +9,9 @@ EKS has not mapped this user correctly in the aws-auth ConfigMap.
 check user
 aws sts get-caller-identity
 
+unset AWS_PROFILE
+aws configure list-profiles
+
 swithc user
 export AWS_PROFILE=admin-user
 
