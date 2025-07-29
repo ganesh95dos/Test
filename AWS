@@ -5,6 +5,13 @@ You need to add the IAM user to the aws-auth ConfigMap in your EKS cluster.
 EKS has not mapped this user correctly in the aws-auth ConfigMap.
 
 3) kubectl get configmap aws-auth -n kube-system -o yaml
+
+check user
+aws sts get-caller-identity
+
+swithc user
+export AWS_PROFILE=admin-user
+
 not work
 
 4) Manually delete the access entry using AWS CLI:
