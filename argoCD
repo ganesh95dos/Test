@@ -1,0 +1,108 @@
+stage('Install ArgoCD'){
+            steps{
+                sh'''
+                    
+                    #kubectl create namespace argocd || true
+                    kubectl get ns
+                    
+                    #kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+                    
+                    # Wait for the service to be created
+                    #sleep 30
+                    
+                    kubectl get ns -n argocd
+                    
+                    echo "Patching argocd-server service to type NodePort..."
+                    kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+                    #kubectl get ns -n argocd
+                    
+                    NODE_PORT=$(kubectl get svc argocd-server -n argocd -o jsonpath="{.spec.ports[0].nodePort}")
+                    NODE_IP=$(minikube ip)
+                    
+                    ARGOCD_SERVER=$NODE_IP:$NODE_PORT
+                    echo "http://$ARGOCD_SERVER"
+                    
+                    pass=$(kubectl get secret argocd-initial-admin-secret -n argocd \
+                    -o jsonpath="{.data.password}" | base64 -d && echo)
+                 
+                '''
+            }
+        }
+        
+        stage('Login ArgoCD') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'argocd', 
+            usernameVariable: 'ARGOCD_USER', 
+            passwordVariable: 'ARGOCD_PASS')]) {
+            
+            sh """
+                echo "Fetching ArgoCD Server NodePort and IP..."
+                NODE_PORT=\$(kubectl get svc argocd-server -n argocd -o jsonpath="{.spec.ports[0].nodePort}")
+                NODE_IP=\$(minikube ip)
+                ARGOCD_SERVER="\$NODE_IP:\$NODE_PORT"
+                
+                echo "Logging into ArgoCD Server at http://\$ARGOCD_SERVER"
+                
+                argocd login \$ARGOCD_SERVER --username $ARGOCD_USER --password $ARGOCD_PASS --insecure
+                
+                echo "✅ Successfully logged into ArgoCD"
+            """
+                }
+            }
+        }
+        
+        stage('Add ArgoCD Repo') {
+            steps {
+                withCredentials([usernamePassword(
+                credentialsId: 'ganesh95dos',
+                usernameVariable: 'GIT_USER',
+                passwordVariable: 'GIT_TOKEN'
+                )]) {
+                    sh '''
+                    echo "Adding repo to ArgoCD..."
+                    
+                    REPO_URL=https://github.com/ganesh95dos/Board-game.git
+                    if ! argocd repo list --output json | grep -q "$REPO_URL"; then
+                   
+                    argocd repo add $REPO_URL \
+                    --username $GIT_USER \
+                    --password $GIT_TOKEN \
+                    --insecure \
+                    --upsert
+                    echo "✅ Repo successfully added to ArgoCD"
+                    argocd repo list
+            else
+            echo "Repo already exists in ArgoCD. Skipping add."
+            fi
+            argocd repo list
+            
+            CTX=$(kubectl config current-context)
+            if ! argocd cluster list --output json | grep -q "$CTX"; then
+            echo $CTX
+            argocd cluster add "$CTX" --yes
+            
+            else
+            echo "Cluster is alredy added. Skipping add."
+            fi
+            argocd cluster list
+                '''
+                }
+            }
+        }
+        
+        stage('Prometheus'){
+            steps{
+                    echo '🔍 Checking if Helm is installed...'
+        sh '''
+            if ! command -v helm >/dev/null 2>&1; then
+                echo "❌ Helm not found. Installing Helm..."
+                curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+                echo "✅ Helm installed successfully."
+            else
+                echo "✅ Helm is already installed:"
+                helm version
+            fi
+        '''
+            }
+        }
