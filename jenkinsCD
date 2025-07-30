@@ -39,8 +39,10 @@ pipeline {
                     #kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
                     
                     #kubectl get svc -o wide
-                    
-                    echo "https://$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}'):$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.ports[0].nodePort}')"
+                    nodepoart=$(kubectl get svc argocd-server -n argocd -o jsonpath='{.spec.ports[0].nodePort}')
+                    kubectl port-forward svc/argocd-server -n argocd 31718:$nodepoart &&
+
+                    echo "https://$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}'):31718"
 
                     pass=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d; echo
 )
