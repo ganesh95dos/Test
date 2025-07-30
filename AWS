@@ -21,6 +21,9 @@ cat ~/.aws/config
 swithc user
 export AWS_PROFILE=admin-user
 
+edit argocd Poart
+kubectl edit svc argocd-server -n argocd
+
 not work
 
 4) Manually delete the access entry using AWS CLI:
