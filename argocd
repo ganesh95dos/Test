@@ -35,3 +35,11 @@ helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --set vpcId=$VPC_ID \
   --set ingressClass=alb
 
+IAMPolicy
+AWSLoadBalancerControllerIAMPolicy
+
+aws iam create-role \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --assume-role-policy-document file://trust-policy.json
+
+
