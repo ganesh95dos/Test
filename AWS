@@ -37,4 +37,12 @@ aws eks delete-access-entry \
 6) Check if the access entry is present and active:
 aws eks list-access-entries --cluster-name my-TWS-EKS-cluster --region ap-south-1
 
+ganesh@ganesh-VMware-Virtual-Platform:~/Downloads/BoardGame/kubernetes/h2$ aws sts get-caller-identity
+
+An error occurred (SignatureDoesNotMatch) when calling the GetCallerIdentity operation: Signature expired: 20250801T140450Z is now earlier than 20250801T164641Z (20250801T170141Z - 15 min.)
+sudo apt update
+sudo apt install ntp -y
+sudo systemctl restart ntp
+
+
 
