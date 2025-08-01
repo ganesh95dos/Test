@@ -1,0 +1,19 @@
+kubectl get pods -n kube-system | grep ebs
+
+eksctl create addon \
+  --name aws-ebs-csi-driver \
+  --cluster my-TWS-EKS-cluster \
+  --service-account-role-arn arn:aws:iam::149536475766:role/AmazonEKS_EBS_CSI_DriverRole \
+  --force
+
+kubectl get pods -n kube-system | grep ebs
+
+eksctl create addon   --name aws-ebs-csi-driver   --cluster my-TWS-EKS-cluster   --service-account-role-arn arn:aws:iam::149536475766:role/AmazonEKS_EBS_CSI_DriverRole   --force
+
+kubectl delete pvc h2-pvc -n board-game
+kubectl get pvc -n board-game
+
+ganesh@ganesh-VMware-Virtual-Platform:~/Downloads/BoardGame/kubernetes/h2$ kubectl get pvc -n board-game
+NAME     STATUS        VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+h2-pvc   Terminating   pvc-83ee953f-89a8-42a9-9eea-2ee1443cc2ea   5Gi        RWO            ebs-sc         <unset>                 13m
+
