@@ -1,6 +1,6 @@
 PVC
 
-aws iam list-roles --query "Roles[?contains(RoleName, 'EBS')].RoleName"
+    aws iam list-roles --query "Roles[?contains(RoleName, 'EBS')].RoleName"
 [
     "AmazonEKS_EBS_CSI_DriverRole" >> if is not showing
 ]
@@ -56,6 +56,8 @@ Re-apply:
 
 kubectl delete pvc h2-pvc
 kubectl apply -f your-updated-pvc.yaml
+
+kubectl get pvc h2-pvc
 
 ✅ Final Check
 
