@@ -1,3 +1,6 @@
+aws eks update-kubeconfig --region ap-south-1 --name my-TWS-EKS-cluster
+kubectl get nodes
+
 Policies to Attach:
 
     AmazonEKSClusterPolicy – Create and manage EKS clusters
