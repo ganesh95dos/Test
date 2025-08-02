@@ -14,6 +14,14 @@ Ensure it has the following Amazon-managed policy attached:
 
     ElasticLoadBalancingFullAccess ✅
 
+Additional Recommended Policies (Depending on Your Role)
+Policy Name	Purpose	Use When
+AmazonEKSClusterAccess	Required to connect to cluster (via aws eks update-kubeconfig)	✅ Always
+AmazonEKSFullAccess	Allows full EKS management	When user manages clusters
+AmazonEC2ContainerRegistryReadOnly	Pull images from ECR	If pulling from private ECR
+AmazonEKSWorkerNodePolicy	Required for EKS nodes (not user access)	For EC2 nodes
+AmazonEKSVPCResourceController	Manages ENIs and LoadBalancers	For managing LoadBalancers
+
 Check LoadBalancer
 kubectl get deployment -n kube-system
 
