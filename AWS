@@ -1,4 +1,5 @@
 EKS
+eks-admins
 1) aws eks update-kubeconfig --name my-TWS-EKS-cluster --region ap-south-1
 2) kubectl config current-context
 You need to add the IAM user to the aws-auth ConfigMap in your EKS cluster.
