@@ -1,11 +1,103 @@
-curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+terraform Attach Policies to IAM User
 
-aws iam create-policy \
-  --policy-name AWSLoadBalancerControllerIAMPolicy \
-  --policy-document file://iam_policy.json
+  aws iam attach-user-policy --user-name teraform \
+    --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
+  aws iam attach-user-policy --user-name teraform \
+    --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+
+  aws iam attach-user-policy --user-name teraform \
+    --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+
+  aws iam attach-user-policy --user-name teraform \
+    --policy-arn arn:aws:iam::aws:policy/AmazonVPCFullAccess
+
+  aws iam attach-user-policy --user-name teraform \
+    --policy-arn arn:aws:iam::aws:policy/IAMFullAccess
+
+  aws iam attach-user-policy --user-name teraform \
+    --policy-arn arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+
+Attach Policy to EBS CSI Driver IAM Role (AmazonEKS_EBS_CSI_DriverRole)
+  aws iam attach-role-policy \
+    --role-name AmazonEKS_EBS_CSI_DriverRole \
+    --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
+confirm : 
+aws iam list-policies --scope AWS --query "Policies[?PolicyName=='AmazonEBSCSIDriverPolicy'].[PolicyName,Arn]" --output table
+-----------------------------------------------------------------------------------------------
+|                                        ListPolicies                                         |
++---------------------------+-----------------------------------------------------------------+
+|  AmazonEBSCSIDriverPolicy |  arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy  |
++---------------------------+-----------------------------------------------------------------+
+
+
+
+
+| Role                           | Attached Policy                      | Purpose                                         |
+| ------------------------------ | ------------------------------------ | ----------------------------------------------- |
+| `AmazonEKS_EBS_CSI_DriverRole` | AmazonEBSCSIDriverPolicy             | Allow EBS CSI to provision & manage EBS volumes |
+| `terraform` IAM user           | Cluster/EKS/EC2/VPC/IAM/ELB policies | Full AWS infra provisioning via Terraform       |
+| `terraform` user in aws-auth   | `system:masters` group               | Full `kubectl` and cluster admin permissions    |
+| EKS Node IAM role              | NodePolicy, CNI, ECR ReadOnly        | Node setup, networking, and ECR access          |
+
+eksctl create addon \
+  --name aws-ebs-csi-driver \
+  --cluster my-TWS-EKS-cluster \
+  --region ap-south-1 \
+  --service-account-role-arn arn:aws:iam::149536475766:role/AmazonEBSCSIDriverPolicy  \
+  --force
+
+kubectl get pods -n kube-system | grep ebs
+ebs-csi-controller-f94c46564-5tdqz   6/6     Running   0          25s
+ebs-csi-controller-f94c46564-h774c   6/6     Running   0          25s
+ebs-csi-node-7glrd                   3/3     Running   0          25s
+ebs-csi-node-lhqmr                   3/3     Running   0          25s
+
+eksctl create iamserviceaccount \
+  --name ebs-csi-controller-sa \
+  --namespace kube-system \
+  --cluster my-TWS-EKS-cluster \
+  --region ap-south-1 \
+  --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
+  --approve
+eksctl delete addon \
+  --name aws-ebs-csi-driver \
+  --cluster my-TWS-EKS-cluster \
+  --region ap-south-1
+
+eksctl create addon \
+  --name aws-ebs-csi-driver \
+  --cluster my-TWS-EKS-cluster \
+  --region ap-south-1 \
+  --service-account-role-arn arn:aws:iam::149536475766:role/eksctl-my-TWS-EKS-cluster-addon-iamserviceaccount-kube-system-ebs-csi-controller-sa-<random> \
+  --force
+eksctl utils associate-iam-oidc-provider \
+  --cluster my-TWS-EKS-cluster \
+  --region ap-south-1 \
+  --approve
+aws eks create-addon \
+  --cluster-name my-TWS-EKS-cluster \
+  --addon-name aws-ebs-csi-driver \
+  --service-account-role-arn arn:aws:iam::149536475766:role/AmazonEKS_EBS_CSI_DriverRole \
+  --region ap-south-1
 
 aws iam attach-role-policy \
-  --policy-arn arn:aws:iam::<account-id>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --role-name AmazonEKS_EBS_CSI_DriverRole \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
+
+aws eks describe-addon \
+  --cluster-name my-TWS-EKS-cluster \
+  --addon-name aws-ebs-csi-driver \
+  --region ap-south-1 \
+  --query "addon.status"
+kubectl get pods -n kube-system | grep ebs
+
+
+
+curl -o iam_policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+
+aws iam attach-role-policy \
+  --policy-arn arn:aws:iam::149536475766:policy/AWSLoadBalancerControllerIAMPolicy \
   --role-name AmazonEKSLoadBalancerControllerRole
 
 aws sts get-caller-identity --query Account --output text >> 149536475766
