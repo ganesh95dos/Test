@@ -1,3 +1,23 @@
+Policies to Attach:
+
+    AmazonEKSClusterPolicy – Create and manage EKS clusters
+
+    AmazonEKSWorkerNodePolicy – Manage worker node group lifecycle
+
+    AmazonEC2FullAccess – Create and manage EC2 VMs, EBS
+
+    AmazonVPCFullAccess – Manage networking stack (VPC/Subnets/SGs/IGWs)
+
+    IAMFullAccess – Create/import IAM roles, policies
+
+    ElasticLoadBalancingFullAccess – Manage load balancers for services/Ingress
+
+aws eks describe-cluster \
+  --name my-TWS-EKS-cluster \
+  --query "cluster.identity.oidc.issuer" \
+  --output text
+
+
 terraform Attach Policies to IAM User
 
   aws iam attach-user-policy --user-name teraform \
@@ -18,6 +38,8 @@ terraform Attach Policies to IAM User
   aws iam attach-user-policy --user-name teraform \
     --policy-arn arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
 
+  aws iam attach-user-policy --user-name terraform --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+
 Attach Policy to EBS CSI Driver IAM Role (AmazonEKS_EBS_CSI_DriverRole)
   aws iam attach-role-policy \
     --role-name AmazonEKS_EBS_CSI_DriverRole \
@@ -30,8 +52,14 @@ aws iam list-policies --scope AWS --query "Policies[?PolicyName=='AmazonEBSCSIDr
 |  AmazonEBSCSIDriverPolicy |  arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy  |
 +---------------------------+-----------------------------------------------------------------+
 
-
-
+AmazonEBSCSIDriverPolicy
+    Managed policy path: arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
+    Grants permissions like:
+        ec2:CreateVolume, DeleteVolume
+        AttachVolume, DetachVolume
+        DescribeVolumes, Instances, AvailabilityZones
+        CreateTags, DeleteTags
+        ModifyVolume, DescribeSnapshots
 
 | Role                           | Attached Policy                      | Purpose                                         |
 | ------------------------------ | ------------------------------------ | ----------------------------------------------- |
