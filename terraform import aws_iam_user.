@@ -1,0 +1,7 @@
+terraform import aws_iam_user.terraform_user teraform
+terraform import aws_eks_addon.ebs_csi my-TWS-EKS-cluster:aws-ebs-csi-driver
+terraform import 'module.eks-cluster.aws_eks_access_entry.this["teraform"]' 'my-TWS-EKS-cluster:arn:aws:iam::149536475766:user/teraform'
+terraform import module.ebs_csi_irsa_role.aws_iam_role.this[0] AmazonEKS_EBS_CSI_DriverRole
+
+terraform state rm aws_iam_user.terraform_user
+terraform state rm aws_eks_addon.ebs_csi
