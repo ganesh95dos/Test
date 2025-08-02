@@ -1,0 +1,36 @@
+deploy EKS
+
+Ensure EKS Node IAM Role Allows ELB Access
+
+Go to AWS Console → IAM → Roles → Find the EKS node instance role (the one attached to the SPOT instances).
+
+Ensure it has the following Amazon-managed policy attached:
+
+    AmazonEKSWorkerNodePolicy
+
+    AmazonEC2ContainerRegistryReadOnly
+
+    AmazonEKS_CNI_Policy
+
+    ElasticLoadBalancingFullAccess ✅
+
+Check LoadBalancer
+kubectl get deployment -n kube-system
+
+NAME                                         READY   UP-TO-DATE   AVAILABLE   AGE
+aws-load-balancer-controller                1/1     1            1           5d
+
+Custom Resource Definitions (CRDs)
+kubectl get crds | grep ingress
+
+Option 2: Modify Node Group to Attach Only One Tagged SG (via Terraform)
+
+If you're managing everything via Terraform and want a permanent fix, update your config so only one of the security groups is tagged.
+
+You can:
+
+    Set cluster_primary_security_group_tags = {} or disable attach_cluster_primary_security_group
+
+    Ensure only one SG (node group SG) has the tag
+
+But for now, console fix is faster.
