@@ -1,0 +1,12 @@
+Argocd
+
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d && echo
+Login
+argocd login ade028b2438d14d7a8cbfb6a5c964836-ff829035df8be4a5.elb.ap-south-1.amazonaws.com \
+  --username admin \
+  --password <admin-password> \
+  --insecure
+
+kubectl config get-contexts
+argocd cluster add arn:aws:eks:ap-south-1:149536475766:cluster/my-TWS-EKS-cluster
